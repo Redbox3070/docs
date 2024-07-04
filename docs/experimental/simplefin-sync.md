@@ -91,3 +91,15 @@ If you wish to only sync one account, view the desired account and click the syn
 1. Currently, the sync pulls at most 90 days of data from each linked account. The amount of data SimpleFIN can get from each account may vary, so not all accounts may have 90 days of historical transactions that can be imported.
 
 2. SimpleFIN's data updates one time / day, roughly every 24 hours, for each linked account. The time of day that each bank updates in SimpleFIN may vary, even from day to day (based on the bank and upstream provider, MX).
+
+### Resetting the Setup Token
+
+To reset your SimpleFIN setup token:
+
+1. Click "Add Account" in the sidebar.
+
+2. Next to "Link bank account with SimpleFIN", click the three-dot menu button.
+
+3. Click "Reset SimpleFIN credentials".
+
+You will then need to obtain a new setup token from SimpleFIN and enter it into Actual.

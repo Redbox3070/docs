@@ -7,12 +7,18 @@ import APIList from './APIList';
 
 This is the documentation of all available API methods. The API has not been released yet, but it will be available in the next update. This section is a work in progress.
 
+<APIList title="Budgets" sections={[
+"getBudgetMonths",
+"getBudgetMonth",
+"setBudgetAmount",
+"setBudgetCarryover"
+]} />
+
 <APIList title="Transactions" sections={[
 "Transaction",
 "addTransactions",
 "importTransactions",
 "getTransactions",
-"filterTransactions",
 "updateTransaction",
 "deleteTransaction"
 ]} />
@@ -51,12 +57,28 @@ This is the documentation of all available API methods. The API has not been rel
 "deletePayee"
 ]} />
 
-<APIList title="Payee rules" sections={[
+<APIList title="Rules" sections={[
+"ConditionOrAction",
+"Rule",
 "Payee rule",
+"getRules",
 "getPayeeRules",
-"createPayeeRule",
-"updatePayeeRule",
-"deletePayeeRule"
+"createRule",
+"updateRule",
+"deleteRule"
+]} />
+
+<APIList title="Misc" sections={[
+"initConfig",
+"init",
+"shutdown",
+"sync",
+"runBankSync",
+"runImport",
+"loadBudget",
+"downloadBudget",
+"batchBudgetUpdates",
+"runQuery"
 ]} />
 
 ## Types of methods
@@ -100,8 +122,6 @@ These are types.
 
 <Method name="setBudgetCarryover" args={[{ name: 'month', type: 'month' }, { name: 'categoryId', type: 'id' }, { name: 'flag', type: 'bool' }]} returns="Promise<null>" />
 
-#### Examples
-
 ## Transactions
 
 #### Transaction
@@ -142,7 +162,7 @@ This method does **not** avoid duplicates. Use `importTransactions` if you want 
 
 This method has the following optional flags:
 
-- `runTransfers`:  create transfers for transactions where transfer payee is given (defaults to false)
+- `runTransfers`: create transfers for transactions where transfer payee is given (defaults to false)
 - `learnCategories`: update Rules based on the category field in the transactions (defaults to false)
 
 This method is mainly for custom importers that want to skip all the automatic stuff because it wants to create raw data. You probably want to use `importTransactions`.
@@ -168,10 +188,6 @@ This method returns an object with the following fields:
 <Method name="getTransactions" args={[{ name: 'accountId', type: 'id'}, { name: 'startDate', type: 'date' }, { name: 'endDate', type: 'date' }]} returns="Promise<Transaction[]>" />
 
 Get all the transactions in `accountId` between the specified dates (inclusive). Returns an array of [`Transaction`](#transaction) objects.
-
-#### `filterTransactions`
-
-`filterTransactions` has been removed. Use [ActualQL](./actual-ql/index.md) instead.
 
 #### `updateTransaction`
 
@@ -207,12 +223,6 @@ await importTransactions(accountId, [
 // (it doesn't matter that August 31st doesn't exist).
 
 await getTransactions(accountId, '2019-08-01', '2019-08-31');
-```
-
-```js
-// Find transactions with the amount of 3.91. Currently this
-// assumes you are using a currency with two decimal places.
-await filterTransactions(accountId, '3.91');
 ```
 
 ```js
@@ -396,8 +406,6 @@ Update fields of a category group. `fields` can specify any field described in [
 
 Delete a category group.
 
-#### Examples
-
 ## Payees
 
 #### Payee
@@ -443,9 +451,15 @@ Update fields of a payee. `fields` can specify any field described in [`Payee`](
 
 Delete a payee.
 
-#### Examples
+## Rules
 
-## Payee rules
+#### ConditionOrAction
+
+<StructType fields={objects.condition} />
+
+#### Rule
+
+<StructType fields={objects.rule} />
 
 #### Payee rule
 
@@ -453,36 +467,117 @@ Delete a payee.
 
 #### Methods
 
+#### `getRules`
+
+<Method name="getRules" args={[]} returns="Promise<Rule[]>" />
+
+Get all rules.
+
 #### `getPayeeRules`
 
-<Method name="getPayees" args={[{ name: 'payeeId', type: "id" }]} returns="Promise<PayeeRule[]>" />
+<Method name="getPayeeRules" args={[{ name: 'payeeId', type: "id" }]} returns="Promise<PayeeRule[]>" />
 
 Get all payees rules for `payeeId`.
 
-#### `createPayeeRule`
+#### `createRule`
 
-<Method name="createPayeeRule" args={[{ name: 'payeeId', type: 'id' }, { name: 'rule', type: 'PayeeRule' }]} returns="Promise<id>" />
+<Method name="createRule" args={[{ name: 'rule', type: 'Rule' }]} returns="Promise<Rule>" />
 
-Create a payee rule for `payeeId`. Returns the `id` of the new rule.
+Create a rule. Returns the new rule, including the `id`.
 
-#### `updatePayeeRule`
+#### `updateRule`
 
-<Method name="updatePayeeRule" args={[{ name: 'id', type: 'id' }, { name: 'fields', type: 'object' }]} returns="Promise<id>" />
+<Method name="updateRule" args={[{ name: 'id', type: 'id' }, { name: 'fields', type: 'object' }]} returns="Promise<Rule>" />
 
-Update fields of a payee rule. `fields` can specify any field described in [`PayeeRule`](#payeerule).
+Update fields of a rule. `fields` can specify any field described in [`Rule`](#rule).  Returns the updated rule.
 
-#### `deletePayeeRule`
+#### `deleteRule`
 
-<Method name="deletePayeeRule" args={[{ name: 'id', type: 'id' }]} returns="Promise<null>" />
+<Method name="deleteRule" args={[{ name: 'id', type: 'id' }]} returns="Promise<null>" />
 
-Delete a payee rule.
+Delete a rule.
 
 #### Examples
 
 ```js
 {
-  payee_id: "08fc54b5-3baa-4874-bef4-470c238d25ac",
-  type: "contains",
-  value: "grocery"
+  stage: 'pre',
+  conditionsOp: 'and',
+  conditions: [
+    {
+      field: 'payee',
+      op: 'is',
+      value: 'test-payee',
+    },
+  ],
+  actions: [
+    {
+      op: 'set',
+      field: 'category',
+      value: 'fc3825fd-b982-4b72-b768-5b30844cf832',
+    },
+  ],
 }
 ```
+
+## Misc
+
+#### InitConfig
+
+<StructType fields={objects.initConfig} />
+
+#### Methods
+
+#### `init`
+
+<Method name="init" args={[{ properties: [{ name: 'config', type: 'InitConfig' }] }]} returns="Promise<void>" />
+
+Initializes the API by connecting to an Actual Budget server.
+
+#### `shutdown`
+
+<Method name="shutdown" args={[]} returns="Promise<void>" />
+
+Shuts down the API. This will close any open budget and clean up any resources.
+
+#### `sync`
+
+<Method name="sync" args={[]} returns="Promise<void>" />
+
+Synchronizes the locally cached budget files with the server's copy.
+
+#### `runBankSync`
+
+<Method name="runBankSync" args={[{ properties: [{ name: 'accountId', type: 'string' }] }]} returns="Promise<void>" />
+
+Run the 3rd party (gocardless, simplefin) bank sync operation. This will download the transactions and insert them into the ledger.
+
+#### `runImport`
+
+<Method name="runImport" args={[{ properties: [{ name: 'budgetName', type: 'string' }, { name: 'func', type: 'func' }] }]} returns="Promise<void>" />
+
+Creates a new budget file with the given name, and then runs the custom importer function to populate it with data.
+
+#### `loadBudget`
+
+<Method name="loadBudget" args={[{ properties: [{ name: 'syncId', type: 'string' }] }]} returns="Promise<void>" />
+
+Load a locally cached budget file.
+
+#### `downloadBudget`
+
+<Method name="downloadBudget" args={[{ properties: [{ name: 'syncId', type: 'string' }, { name: 'password', type: 'string?' }] }]} returns="Promise<void>" />
+
+Load a budget file. If the file exists locally, it will load from there. Otherwise, it will download the file from the server.
+
+#### `batchBudgetUpdates`
+
+<Method name="batchBudgetUpdates" args={[{ properties: [{ name: 'func', type: 'func' }] }]} returns="Promise<void>" />
+
+Performs a batch of budget updates. This is useful for making multiple changes to the budget in a single call to the server.
+
+#### `runQuery`
+
+<Method name="runQuery" args={[{ properties: [{ name: 'query', type: 'ActualQL' }] }]} returns="Promise<unknown>" />
+
+Allows running any arbitrary ActualQL query on the open budget.

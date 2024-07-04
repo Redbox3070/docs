@@ -93,7 +93,6 @@ const sidebars = {
             id: 'migration/index',
           },
           items: [
-            'migration/simple-sync',
             {
               type: 'category',
               label: 'Migrating From Other Apps',
@@ -173,7 +172,11 @@ const sidebars = {
             type: 'doc',
             id: 'reports-filters/index',
           },
-          items: ['reports-filters/reports', 'reports-filters/filters'],
+          items: [
+            'reports-filters/filters',
+            'reports-filters/reports', 
+            'reports-filters/custom-reports'
+          ],
         },
         {
           type: 'category',
@@ -209,6 +212,7 @@ const sidebars = {
           },
           items: [
             'advanced/bank-sync',
+            'advanced/http-header-auth',
             {
               type: 'category',
               label: 'Scripts',
@@ -244,6 +248,7 @@ const sidebars = {
           items: [
             'troubleshooting/server',
             'troubleshooting/shared-array-buffer',
+            'troubleshooting/reset_password',
             'troubleshooting/edge-browser',
           ],
         },
@@ -279,6 +284,7 @@ const sidebars = {
           items: [
             'contributing/project-details/database',
             'contributing/project-details/architecture',
+            'contributing/project-details/feature-flags',
             'contributing/project-details/electron',
             'contributing/project-details/migrations',
             'contributing/project-details/advice',
